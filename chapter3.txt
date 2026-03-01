@@ -1,1 +1,162 @@
-It was the spring of hope,it was the winter of despair.
+import tkinter as tk
+from tkinter import ttk
+import random
+import string
+import re
+
+# ---------------- Password Generator ---------------- #
+def generate_password():
+    length = random.randint(8, 16)
+
+    upper = random.choice(string.ascii_uppercase)
+    lower = random.choice(string.ascii_lowercase)
+    digit = random.choice(string.digits)
+    special = random.choice("@#$%&!")
+
+    remaining = ''.join(random.choices(
+        string.ascii_letters + string.digits + "@#$%&!",
+        k=length-4))
+
+    password_list = list(upper + lower + digit + special + remaining)
+    random.shuffle(password_list)
+    password = ''.join(password_list)
+
+    entry_password.delete(0, tk.END)
+    entry_password.insert(0, password)
+    entry_confirm.delete(0, tk.END)
+    entry_confirm.insert(0, password)
+
+    result_label.config(text="Password Generated Successfully!", fg="cyan")
+    progress['value'] = 0
+
+
+# ---------------- Validation Function ---------------- #
+def validate_password():
+    password = entry_password.get()
+    confirm = entry_confirm.get()
+
+    if password == "" or confirm == "":
+        result_label.config(text="Fields cannot be empty!", fg="red")
+        progress['value'] = 10
+        return
+
+    if len(password) < 8 or len(password) > 16:
+        result_label.config(text="Password must be 8-16 characters!", fg="red")
+        progress['value'] = 20
+        return
+
+    if not re.search("[A-Z]", password):
+        result_label.config(text="Missing uppercase letter!", fg="red")
+        progress['value'] = 30
+        return
+
+    if not re.search("[a-z]", password):
+        result_label.config(text="Missing lowercase letter!", fg="red")
+        progress['value'] = 40
+        return
+
+    if not re.search("[0-9]", password):
+        result_label.config(text="Missing digit!", fg="red")
+        progress['value'] = 50
+        return
+
+    if not re.search("[@#$%&!]", password):
+        result_label.config(text="Missing special character!", fg="red")
+        progress['value'] = 60
+        return
+
+    if not re.fullmatch("[A-Za-z0-9@#$%&!]+", password):
+        result_label.config(text="Invalid characters used!", fg="red")
+        progress['value'] = 70
+        return
+
+    if password != confirm:
+        result_label.config(text="Passwords do not match!", fg="red")
+        progress['value'] = 80
+        return
+
+    if "password" in password.lower():
+        result_label.config(text="Password cannot contain 'password'!", fg="red")
+        progress['value'] = 90
+        return
+
+    result_label.config(text="All Validations Passed ✓ Strong Password!", fg="green")
+    progress['value'] = 100
+
+
+# ---------------- Show/Hide ---------------- #
+def toggle_password():
+    if show_var.get():
+        entry_password.config(show="")
+        entry_confirm.config(show="")
+    else:
+        entry_password.config(show="*")
+        entry_confirm.config(show="*")
+
+
+# ---------------- GUI ---------------- #
+root = tk.Tk()
+root.title("Official Password Generator & Validator")
+root.geometry("550x450")
+root.configure(bg="#1e1e2f")
+root.resizable(False, False)
+
+title = tk.Label(root, text="Password Generator & Validation System",
+                 font=("Helvetica", 17, "bold"),
+                 bg="#1e1e2f", fg="white")
+title.pack(pady=20)
+
+frame = tk.Frame(root, bg="#2c2c3e", padx=30, pady=25)
+frame.pack()
+
+tk.Label(frame, text="Generated / Enter Password:",
+         font=("Arial", 12),
+         bg="#2c2c3e", fg="white").grid(row=0, column=0, sticky="w")
+
+entry_password = tk.Entry(frame, show="*", width=35,
+                          font=("Arial", 12))
+entry_password.grid(row=1, column=0, pady=10)
+
+tk.Label(frame, text="Confirm Password:",
+         font=("Arial", 12),
+         bg="#2c2c3e", fg="white").grid(row=2, column=0, sticky="w")
+
+entry_confirm = tk.Entry(frame, show="*", width=35,
+                         font=("Arial", 12))
+entry_confirm.grid(row=3, column=0, pady=10)
+
+show_var = tk.BooleanVar()
+tk.Checkbutton(frame, text="Show Password",
+               variable=show_var,
+               command=toggle_password,
+               bg="#2c2c3e", fg="white",
+               activebackground="#2c2c3e",
+               selectcolor="#2c2c3e").grid(row=4, column=0, sticky="w")
+
+# Buttons
+tk.Button(root, text="Generate Password",
+          command=generate_password,
+          font=("Arial", 11, "bold"),
+          bg="#2196F3", fg="white",
+          width=20).pack(pady=10)
+
+tk.Button(root, text="Validate Password",
+          command=validate_password,
+          font=("Arial", 11, "bold"),
+          bg="#4CAF50", fg="white",
+          width=20).pack(pady=5)
+
+result_label = tk.Label(root, text="",
+                        font=("Arial", 12, "bold"),
+                        bg="#1e1e2f")
+result_label.pack(pady=10)
+
+progress = ttk.Progressbar(root, length=400,
+                           mode='determinate')
+progress.pack(pady=10)
+
+tk.Label(root, text="© 2026 Secure Authentication System",
+         font=("Arial", 8),
+         bg="#1e1e2f", fg="#aaaaaa").pack(side="bottom", pady=10)
+
+root.mainloop()
